@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>يوميات السكر 🌸</title>
+<title>يومياتي الصحية 🌸</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
 body {
 font-family: 'Tajawal', sans-serif;
-background-color: #fce4ec; /* لون خلفية وردي فاتح مريح للعين */
+background-color: #fce4ec;
 margin: 0;
 padding: 0;
 display: flex;
@@ -19,172 +19,185 @@ min-height: 100vh;
 .container {
 background: white;
 border-radius: 20px;
-padding: 30px;
+padding: 25px;
 box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 width: 85%;
 max-width: 400px;
 text-align: center;
 }
-h1 {
-color: #d81b60;
-font-size: 24px;
-margin-bottom: 5px;
+h1 { color: #d81b60; font-size: 24px; margin-bottom: 5px; }
+h2.meal-title { color: #ad1457; font-size: 20px; background: #f8bbd0; padding: 10px; border-radius: 12px; margin-bottom: 20px; }
+p.subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+.input-group { margin-bottom: 15px; text-align: right; }
+label { display: block; color: #444; font-weight: bold; margin-bottom: 8px; font-size: 15px; }
+input {
+width: 100%; padding: 12px; border: 2px solid #f8bbd0; border-radius: 12px;
+box-sizing: border-box; font-family: 'Tajawal', sans-serif; font-size: 16px;
+outline: none; transition: 0.3s; background-color: #fff;
 }
-p.subtitle {
-color: #888;
-font-size: 14px;
-margin-bottom: 25px;
-}
-.input-group {
-margin-bottom: 20px;
-text-align: right;
-}
-label {
-display: block;
-color: #444;
-font-weight: bold;
-margin-bottom: 8px;
-font-size: 15px;
-}
-input, select {
-width: 100%;
-padding: 12px;
-border: 2px solid #f8bbd0;
-border-radius: 12px;
-box-sizing: border-box;
-font-family: 'Tajawal', sans-serif;
-font-size: 16px;
-outline: none;
-transition: 0.3s;
-background-color: #fff;
-}
-input:focus, select:focus {
-border-color: #d81b60;
-box-shadow: 0 0 8px rgba(216, 27, 96, 0.2);
-}
+input:focus { border-color: #d81b60; box-shadow: 0 0 8px rgba(216, 27, 96, 0.2); }
 button {
-background-color: #d81b60;
-color: white;
-border: none;
-padding: 15px;
-width: 100%;
-border-radius: 12px;
-font-size: 18px;
-font-weight: bold;
-cursor: pointer;
-transition: 0.3s;
-font-family: 'Tajawal', sans-serif;
-margin-top: 10px;
+background-color: #d81b60; color: white; border: none; padding: 15px;
+width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold;
+cursor: pointer; transition: 0.3s; font-family: 'Tajawal', sans-serif; margin-top: 10px;
 }
-button:hover {
-background-color: #ad1457;
-}
-button:disabled {
-background-color: #f48fb1;
-cursor: not-allowed;
-}
-.message {
-margin-top: 15px;
-font-weight: bold;
-display: none;
-padding: 10px;
-border-radius: 8px;
-}
+button:hover { background-color: #ad1457; }
+button:disabled { background-color: #f48fb1; cursor: not-allowed; }
+.message { margin-top: 15px; font-weight: bold; display: none; padding: 10px; border-radius: 8px; }
 .success { background-color: #e8f5e9; color: #2e7d32; }
 .error { background-color: #ffebee; color: #c62828; }
+
+#doneScreen { display: none; padding: 20px 0; }
+#doneScreen h2 { color: #d81b60; font-size: 28px; }
+#doneScreen p { font-size: 18px; color: #555; line-height: 1.5; }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>يوميات السكر 🌸</h1>
-<p class="subtitle">سجلي قياساتك بكل سهولة يا بطلة</p>
+<h1>يومياتي 🌸</h1>
+<p class="subtitle" id="greeting">تسجيل قياساتك بكل سهولة يا بطلة 💪</p>
 
+<!-- شاشة النهاية (تظهر بعد العشاء) -->
+<div id="doneScreen">
+<h2>🎉 أحسنتِ!</h2>
+<p>سجلتي كلشي ديال اليوم.<br>ارتاحي دابا ونلتقي غداً إن شاء الله 💖</p>
+</div>
+
+<!-- فورم التسجيل -->
 <form id="glucoseForm">
 <div class="input-group">
-<label>🩸 مستوى السكر (mg/dL)</label>
-<input type="number" id="glucose" placeholder="مثال: 120" required>
+<label>📅 التاريخ (يمكنك تعديله)</label>
+<input type="date" id="recordDate" required>
+</div>
+
+<h2 id="mealTitle" class="meal-title">🍳 وجبة الفطور</h2>
+
+<div class="input-group">
+<label>🩸 السكر (mg/dL)</label>
+<input type="number" id="glucose" placeholder="مثال: 110" required>
 </div>
 
 <div class="input-group">
-<label>⏰ التوقيت</label>
-<select id="timing" required>
-<option value="" disabled selected>اختاري التوقيت...</option>
-<option value="صايمة (قبل الفطور)">صايمة (قبل الفطور)</option>
-<option value="بعد الفطور بساعتين">بعد الفطور بساعتين</option>
-<option value="قبل الغداء">قبل الغداء</option>
-<option value="بعد الغداء بساعتين">بعد الغداء بساعتين</option>
-<option value="قبل العشاء">قبل العشاء</option>
-<option value="بعد العشاء بساعتين">بعد العشاء بساعتين</option>
-<option value="قبل النوم">قبل النوم</option>
-</select>
+<label>⚡ أنسولين سريع (وحدات)</label>
+<input type="number" id="fastInsulin" placeholder="إذا لم تأخذيه اتركيه فارغاً">
+</div>
+
+<div class="input-group">
+<label>🐢 أنسولين بطيء (وحدات)</label>
+<input type="number" id="slowInsulin" placeholder="إذا لم تأخذيه اتركيه فارغاً">
 </div>
 
 <div class="input-group">
 <label>📝 ملاحظات (اختياري)</label>
-<input type="text" id="notes" placeholder="شنو كليتي؟ أو أي ملاحظة...">
+<input type="text" id="notes" placeholder="شنو كليتي؟ 🍎🥪">
 </div>
 
-<button type="submit" id="submitBtn">تسجيل القياس ✨</button>
+<button type="submit" id="submitBtn">تسجيل وتأكيد ✨</button>
 <div id="statusMessage" class="message"></div>
 </form>
 </div>
 
 <script>
-// ⚠️ ضع الرابط الذي حصلت عليه من Google Apps Script بين علامتي التنصيص أدناه
+// ⚠️ ضعي رابط Google Apps Script هنا
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5sKIkrGXPWvDazWPzNxRAKqC5tJq6sn3OoIoH36DZR3n1UTdZerW5Y4qO8WF3Zfs/exec";
 
+// إعدادات الوجبات
+const meals = [
+{ id: 'breakfast', title: '🍳 وجبة الفطور', name: 'الفطور' },
+{ id: 'lunch', title: '🥗 وجبة الغداء', name: 'الغداء' },
+{ id: 'dinner', title: '🍲 وجبة العشاء', name: 'العشاء' }
+];
+
+// جلب تاريخ اليوم
+let today = new Date();
+// ضبط التاريخ ليتناسب مع التوقيت المحلي (لتفادي تأخر التاريخ)
+today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+let todayStr = today.toISOString().split('T')[0];
+
+// التحقق من اليوم المحفوظ في الهاتف لتصفير العداد إذا بدأ يوم جديد
+let savedDate = localStorage.getItem('trackerDate');
+let currentStep = parseInt(localStorage.getItem('currentStep')) || 0;
+
+if (savedDate !== todayStr) {
+currentStep = 0; // تصفير الوجبات لتبدأ من الفطور
+localStorage.setItem('trackerDate', todayStr);
+localStorage.setItem('currentStep', 0);
+}
+
+// وضع تاريخ اليوم تلقائياً في خانة التاريخ
+document.getElementById("recordDate").value = todayStr;
+
+// دالة تحديث الشاشة حسب الوجبة الحالية
+function updateUI() {
+if (currentStep >= meals.length) {
+// إذا اكتملت الـ 3 وجبات
+document.getElementById('glucoseForm').style.display = 'none';
+document.getElementById('greeting').style.display = 'none';
+document.getElementById('doneScreen').style.display = 'block';
+} else {
+// عرض الوجبة الحالية
+document.getElementById('mealTitle').innerText = meals[currentStep].title;
+// تفريغ الخانات استعداداً للوجبة الجديدة
+document.getElementById('glucose').value = '';
+document.getElementById('fastInsulin').value = '';
+document.getElementById('slowInsulin').value = '';
+document.getElementById('notes').value = '';
+}
+}
+
+// تشغيل الدالة عند فتح التطبيق
+updateUI();
+
+// عند الضغط على زر التسجيل
 document.getElementById("glucoseForm").addEventListener("submit", function(e) {
 e.preventDefault();
 
 const btn = document.getElementById("submitBtn");
 const msg = document.getElementById("statusMessage");
 
-// تغيير حالة الزر أثناء الإرسال
 btn.innerText = "جاري التسجيل... ⏳";
 btn.disabled = true;
 msg.style.display = "none";
 
-// جمع البيانات من الخانات
+// جمع البيانات
 const data = {
+date: document.getElementById("recordDate").value, // يأخذ التاريخ المكتوب حتى لو تم تعديله
+meal: meals[currentStep].name,
 glucose: document.getElementById("glucose").value,
-timing: document.getElementById("timing").value,
+fastInsulin: document.getElementById("fastInsulin").value || "",
+slowInsulin: document.getElementById("slowInsulin").value || "",
 notes: document.getElementById("notes").value
 };
 
 // إرسال البيانات
 fetch(WEB_APP_URL, {
 method: "POST",
-mode: "no-cors", // مهم جداً للإرسال من المتصفح بدون مشاكل
-headers: {
-"Content-Type": "application/json"
-},
+mode: "no-cors",
+headers: { "Content-Type": "application/json" },
 body: JSON.stringify(data)
 })
 .then(() => {
-// إظهار رسالة النجاح
-msg.innerText = "تم تسجيل القياس بنجاح! أحسنتِ 👏";
+msg.innerText = "تم التسجيل بنجاح! 👏";
 msg.className = "message success";
 msg.style.display = "block";
 
-// إفراغ الخانات
-document.getElementById("glucoseForm").reset();
+// الانتقال للوجبة التالية بعد ثانيتين
+setTimeout(() => {
+currentStep++;
+localStorage.setItem('currentStep', currentStep);
+msg.style.display = "none";
+updateUI(); // تحديث الواجهة لتظهر الوجبة الجديدة
+btn.innerText = "تسجيل وتأكيد ✨";
+btn.disabled = false;
+}, 2000);
 })
 .catch((error) => {
-// إظهار رسالة الخطأ
 msg.innerText = "حدث خطأ، المرجو المحاولة لاحقاً 😔";
 msg.className = "message error";
 msg.style.display = "block";
-})
-.finally(() => {
-// إعادة الزر لشكله الطبيعي
-btn.innerText = "تسجيل القياس ✨";
+btn.innerText = "تسجيل وتأكيد ✨";
 btn.disabled = false;
-
-// إخفاء الرسالة بعد 4 ثوانٍ
-setTimeout(() => {
-msg.style.display = "none";
-}, 4000);
 });
 });
 </script>
