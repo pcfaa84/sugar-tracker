@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>يوميات السكر 🌸</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+body {
+font-family: 'Tajawal', sans-serif;
+background-color: #fce4ec; /* لون خلفية وردي فاتح مريح للعين */
+margin: 0;
+padding: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+}
+.container {
+background: white;
+border-radius: 20px;
+padding: 30px;
+box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+width: 85%;
+max-width: 400px;
+text-align: center;
+}
+h1 {
+color: #d81b60;
+font-size: 24px;
+margin-bottom: 5px;
+}
+p.subtitle {
+color: #888;
+font-size: 14px;
+margin-bottom: 25px;
+}
+.input-group {
+margin-bottom: 20px;
+text-align: right;
+}
+label {
+display: block;
+color: #444;
+font-weight: bold;
+margin-bottom: 8px;
+font-size: 15px;
+}
+input, select {
+width: 100%;
+padding: 12px;
+border: 2px solid #f8bbd0;
+border-radius: 12px;
+box-sizing: border-box;
+font-family: 'Tajawal', sans-serif;
+font-size: 16px;
+outline: none;
+transition: 0.3s;
+background-color: #fff;
+}
+input:focus, select:focus {
+border-color: #d81b60;
+box-shadow: 0 0 8px rgba(216, 27, 96, 0.2);
+}
+button {
+background-color: #d81b60;
+color: white;
+border: none;
+padding: 15px;
+width: 100%;
+border-radius: 12px;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
+font-family: 'Tajawal', sans-serif;
+margin-top: 10px;
+}
+button:hover {
+background-color: #ad1457;
+}
+button:disabled {
+background-color: #f48fb1;
+cursor: not-allowed;
+}
+.message {
+margin-top: 15px;
+font-weight: bold;
+display: none;
+padding: 10px;
+border-radius: 8px;
+}
+.success { background-color: #e8f5e9; color: #2e7d32; }
+.error { background-color: #ffebee; color: #c62828; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>يوميات السكر 🌸</h1>
+<p class="subtitle">سجلي قياساتك بكل سهولة يا بطلة</p>
+
+<form id="glucoseForm">
+<div class="input-group">
+<label>🩸 مستوى السكر (mg/dL)</label>
+<input type="number" id="glucose" placeholder="مثال: 120" required>
+</div>
+
+<div class="input-group">
+<label>⏰ التوقيت</label>
+<select id="timing" required>
+<option value="" disabled selected>اختاري التوقيت...</option>
+<option value="صايمة (قبل الفطور)">صايمة (قبل الفطور)</option>
+<option value="بعد الفطور بساعتين">بعد الفطور بساعتين</option>
+<option value="قبل الغداء">قبل الغداء</option>
+<option value="بعد الغداء بساعتين">بعد الغداء بساعتين</option>
+<option value="قبل العشاء">قبل العشاء</option>
+<option value="بعد العشاء بساعتين">بعد العشاء بساعتين</option>
+<option value="قبل النوم">قبل النوم</option>
+</select>
+</div>
+
+<div class="input-group">
+<label>📝 ملاحظات (اختياري)</label>
+<input type="text" id="notes" placeholder="شنو كليتي؟ أو أي ملاحظة...">
+</div>
+
+<button type="submit" id="submitBtn">تسجيل القياس ✨</button>
+<div id="statusMessage" class="message"></div>
+</form>
+</div>
+
+<script>
+// ⚠️ ضع الرابط الذي حصلت عليه من Google Apps Script بين علامتي التنصيص أدناه
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5sKIkrGXPWvDazWPzNxRAKqC5tJq6sn3OoIoH36DZR3n1UTdZerW5Y4qO8WF3Zfs/exec";
+
+document.getElementById("glucoseForm").addEventListener("submit", function(e) {
+e.preventDefault();
+
+const btn = document.getElementById("submitBtn");
+const msg = document.getElementById("statusMessage");
+
+// تغيير حالة الزر أثناء الإرسال
+btn.innerText = "جاري التسجيل... ⏳";
+btn.disabled = true;
+msg.style.display = "none";
+
+// جمع البيانات من الخانات
+const data = {
+glucose: document.getElementById("glucose").value,
+timing: document.getElementById("timing").value,
+notes: document.getElementById("notes").value
+};
+
+// إرسال البيانات
+fetch(WEB_APP_URL, {
+method: "POST",
+mode: "no-cors", // مهم جداً للإرسال من المتصفح بدون مشاكل
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(data)
+})
+.then(() => {
+// إظهار رسالة النجاح
+msg.innerText = "تم تسجيل القياس بنجاح! أحسنتِ 👏";
+msg.className = "message success";
+msg.style.display = "block";
+
+// إفراغ الخانات
+document.getElementById("glucoseForm").reset();
+})
+.catch((error) => {
+// إظهار رسالة الخطأ
+msg.innerText = "حدث خطأ، المرجو المحاولة لاحقاً 😔";
+msg.className = "message error";
+msg.style.display = "block";
+})
+.finally(() => {
+// إعادة الزر لشكله الطبيعي
+btn.innerText = "تسجيل القياس ✨";
+btn.disabled = false;
+
+// إخفاء الرسالة بعد 4 ثوانٍ
+setTimeout(() => {
+msg.style.display = "none";
+}, 4000);
+});
+});
+</script>
+
+</body>
+</html>
