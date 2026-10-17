@@ -1,205 +1,354 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>يومياتي الصحية 🌸</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-body {
-font-family: 'Tajawal', sans-serif;
-background-color: #fce4ec;
-margin: 0;
-padding: 0;
-display: flex;
-justify-content: center;
-align-items: center;
-min-height: 100vh;
-}
-.container {
-background: white;
-border-radius: 20px;
-padding: 25px;
-box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-width: 85%;
-max-width: 400px;
-text-align: center;
-}
-h1 { color: #d81b60; font-size: 24px; margin-bottom: 5px; }
-h2.meal-title { color: #ad1457; font-size: 20px; background: #f8bbd0; padding: 10px; border-radius: 12px; margin-bottom: 20px; }
-p.subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
-.input-group { margin-bottom: 15px; text-align: right; }
-label { display: block; color: #444; font-weight: bold; margin-bottom: 8px; font-size: 15px; }
-input {
-width: 100%; padding: 12px; border: 2px solid #f8bbd0; border-radius: 12px;
-box-sizing: border-box; font-family: 'Tajawal', sans-serif; font-size: 16px;
-outline: none; transition: 0.3s; background-color: #fff;
-}
-input:focus { border-color: #d81b60; box-shadow: 0 0 8px rgba(216, 27, 96, 0.2); }
-button {
-background-color: #d81b60; color: white; border: none; padding: 15px;
-width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold;
-cursor: pointer; transition: 0.3s; font-family: 'Tajawal', sans-serif; margin-top: 10px;
-}
-button:hover { background-color: #ad1457; }
-button:disabled { background-color: #f48fb1; cursor: not-allowed; }
-.message { margin-top: 15px; font-weight: bold; display: none; padding: 10px; border-radius: 8px; }
-.success { background-color: #e8f5e9; color: #2e7d32; }
-.error { background-color: #ffebee; color: #c62828; }
-
-#doneScreen { display: none; padding: 20px 0; }
-#doneScreen h2 { color: #d81b60; font-size: 28px; }
-#doneScreen p { font-size: 18px; color: #555; line-height: 1.5; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>يومياتي الصحية 🌸</title>
+    <!-- مكتبة تحويل البيانات لـ PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #fce4ec; margin: 0; padding: 0; padding-bottom: 70px; }
+        
+        /* شريط الإنجازات (Streak) */
+        .streak-bar { background: #d81b60; color: white; text-align: center; padding: 10px; font-weight: bold; font-size: 16px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; margin-bottom: 15px; }
+        
+        .container { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); width: 85%; max-width: 400px; margin: auto; text-align: center; }
+        h1 { color: #d81b60; font-size: 24px; margin-bottom: 5px; }
+        h2.meal-title { color: #ad1457; font-size: 20px; background: #f8bbd0; padding: 10px; border-radius: 12px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; color: #444; font-weight: bold; margin-bottom: 8px; font-size: 15px; }
+        input { width: 100%; padding: 12px; border: 2px solid #f8bbd0; border-radius: 12px; box-sizing: border-box; font-family: 'Tajawal', sans-serif; font-size: 16px; outline: none; background-color: #fff; }
+        input:focus { border-color: #d81b60; }
+        
+        button { background-color: #d81b60; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Tajawal', sans-serif; }
+        button:disabled { background-color: #f48fb1; }
+        
+        /* ألوان التنبيهات */
+        .alert-box { display: none; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: -5px; margin-bottom: 15px; font-size: 14px; }
+        .alert-red { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .alert-green { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .alert-yellow { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+        
+        .message { margin-top: 15px; font-weight: bold; display: none; padding: 10px; border-radius: 8px; }
+        .success { background-color: #e8f5e9; color: #2e7d32; }
+        .error { background-color: #ffebee; color: #c62828; }
+        
+        /* الشريط السفلي (التبويبات) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .nav-item { color: #888; text-decoration: none; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 12px; }
+        .nav-item.active { color: #d81b60; }
+        .nav-item span.icon { font-size: 22px; margin-bottom: 4px; }
+        
+        /* تصميم كروت التعديل */
+        .edit-card { background: #fdf0f4; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: right; border: 1px solid #f8bbd0;}
+        .edit-card h3 { color: #d81b60; margin-top: 0; border-bottom: 1px solid #f8bbd0; padding-bottom: 5px; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-<h1>يومياتي 🌸</h1>
-<p class="subtitle" id="greeting">تسجيل قياساتك بكل سهولة يا بطلة 💪</p>
+    <!-- عداد السلسلة (Gamification) -->
+    <div class="streak-bar">
+        أيام الالتزام المتتالية: <span id="streakCount">0</span> 🔥 <span id="streakBadge"></span>
+    </div>
 
-<!-- شاشة النهاية (تظهر بعد العشاء) -->
-<div id="doneScreen">
-<h2>🎉 أحسنتِ!</h2>
-<p>سجلتي كلشي ديال اليوم.<br>ارتاحي دابا ونلتقي غداً إن شاء الله 💖</p>
-</div>
+    <!-- التبويب 1: التسجيل اليومي -->
+    <div id="tab-home" class="tab-content active container">
+        <h1>يومياتي 🌸</h1>
+        <div id="doneScreen" style="display:none; padding: 20px 0;">
+            <h2 style="color: #d81b60;">🎉 أحسنتِ!</h2>
+            <p>سجلتي كلشي ديال اليوم.<br>ارتاحي دابا ونلتقي غداً إن شاء الله 💖</p>
+        </div>
 
-<!-- فورم التسجيل -->
-<form id="glucoseForm">
-<div class="input-group">
-<label>📅 التاريخ (يمكنك تعديله)</label>
-<input type="date" id="recordDate" required>
-</div>
+        <form id="glucoseForm">
+            <div class="input-group">
+                <label>📅 التاريخ</label>
+                <input type="date" id="recordDate" required readonly> <!-- للقراءة فقط هنا لتجنب الأخطاء، التعديل في التبويب 2 -->
+            </div>
+            <h2 id="mealTitle" class="meal-title">🍳 وجبة الفطور</h2>
+            <div class="input-group">
+                <label>🩸 السكر (mg/dL)</label>
+                <input type="number" id="glucose" required>
+            </div>
+            <!-- صندوق التنبيه الذكي -->
+            <div id="glucoseAlert" class="alert-box"></div>
 
-<h2 id="mealTitle" class="meal-title">🍳 وجبة الفطور</h2>
+            <div class="input-group">
+                <label>⚡ سريع (وحدات)</label>
+                <input type="number" id="fastInsulin">
+            </div>
+            <div class="input-group">
+                <label>🐢 بطيء (وحدات)</label>
+                <input type="number" id="slowInsulin">
+            </div>
+            <div class="input-group">
+                <label>📝 ملاحظات</label>
+                <input type="text" id="notes">
+            </div>
+            <button type="submit" id="submitBtn">تسجيل وتأكيد ✨</button>
+            <div id="statusMessage" class="message"></div>
+        </form>
+    </div>
 
-<div class="input-group">
-<label>🩸 السكر (mg/dL)</label>
-<input type="number" id="glucose" placeholder="مثال: 110" required>
-</div>
+    <!-- التبويب 2: سجل التعديلات القديمة -->
+    <div id="tab-history" class="tab-content container">
+        <h1>السجل والتعديل ✏️</h1>
+        <p style="color:#888; font-size:14px;">اختاري يوماً قديماً لرؤية أو تعديل بياناته</p>
+        
+        <div class="input-group">
+            <input type="date" id="historyDate">
+            <button onclick="fetchHistory()" id="fetchBtn" style="background:#ad1457; padding:10px; margin-top:5px;">جلب البيانات 🔍</button>
+        </div>
+        
+        <div id="historyMsg" class="message" style="margin-bottom:15px;"></div>
+        <div id="historyContent"></div> <!-- ستظهر كروت التعديل هنا -->
+    </div>
 
-<div class="input-group">
-<label>⚡ أنسولين سريع (وحدات)</label>
-<input type="number" id="fastInsulin" placeholder="إذا لم تأخذيه اتركيه فارغاً">
-</div>
+    <!-- التبويب 3: تقرير PDF -->
+    <div id="tab-pdf" class="tab-content container">
+        <h1>تقرير الطبيب 📑</h1>
+        <p style="color:#888; font-size:14px;">تحميل كل القياسات في ملف PDF منظم لتقديمه للطبيب.</p>
+        <button onclick="generatePDF()" id="pdfBtn" style="background:#2e7d32;">تحميل التقرير 📥</button>
+        <div id="pdfMsg" class="message"></div>
+        
+        <!-- جدول مخفي يتم تحويله لـ PDF -->
+        <div id="pdfContainer" style="display:none; text-align:right; font-family:sans-serif;">
+            <h2 style="color:#d81b60; text-align:center;">تقرير قياسات السكري 🌸</h2>
+            <table id="pdfTable" style="width:100%; border-collapse: collapse; margin-top:20px;" border="1">
+                <tr style="background:#f8bbd0;">
+                    <th>التاريخ</th><th>الوجبة</th><th>السكر</th><th>سريع</th><th>بطيء</th><th>ملاحظات</th>
+                </tr>
+            </table>
+        </div>
+    </div>
 
-<div class="input-group">
-<label>🐢 أنسولين بطيء (وحدات)</label>
-<input type="number" id="slowInsulin" placeholder="إذا لم تأخذيه اتركيه فارغاً">
-</div>
-
-<div class="input-group">
-<label>📝 ملاحظات (اختياري)</label>
-<input type="text" id="notes" placeholder="شنو كليتي؟ 🍎🥪">
-</div>
-
-<button type="submit" id="submitBtn">تسجيل وتأكيد ✨</button>
-<div id="statusMessage" class="message"></div>
-</form>
-</div>
+    <!-- الشريط السفلي للتنقل -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-home', this)">
+            <span class="icon">📝</span><span>اليوميات</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-history', this)">
+            <span class="icon">🕰️</span><span>السجل</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-pdf', this)">
+            <span class="icon">📑</span><span>PDF</span>
+        </div>
+    </div>
 
 <script>
-// ⚠️ ضعي رابط Google Apps Script هنا
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5sKIkrGXPWvDazWPzNxRAKqC5tJq6sn3OoIoH36DZR3n1UTdZerW5Y4qO8WF3Zfs/exec";
+    // ⚠️ ضعي رابط Google Apps Script الجديد هنا!
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5sKIkrGXPWvDazWPzNxRAKqC5tJq6sn3OoIoH36DZR3n1UTdZerW5Y4qO8WF3Zfs/exec"; 
 
-// إعدادات الوجبات
-const meals = [
-{ id: 'breakfast', title: '🍳 وجبة الفطور', name: 'الفطور' },
-{ id: 'lunch', title: '🥗 وجبة الغداء', name: 'الغداء' },
-{ id: 'dinner', title: '🍲 وجبة العشاء', name: 'العشاء' }
-];
+    // --- إعدادات أساسية ---
+    const meals = [ { id: 'breakfast', title: '🍳 وجبة الفطور', name: 'الفطور' }, { id: 'lunch', title: '🥗 وجبة الغداء', name: 'الغداء' }, { id: 'dinner', title: '🍲 وجبة العشاء', name: 'العشاء' } ];
+    let today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    let todayStr = today.toISOString().split('T')[0];
+    
+    // --- نظام السلسلة (Streak) والأوسمة ---
+    function updateStreak() {
+        let streak = parseInt(localStorage.getItem('streakCount')) || 0;
+        let lastDate = localStorage.getItem('lastCompletedDate');
+        
+        document.getElementById('streakCount').innerText = streak;
+        
+        // الأوسمة
+        let badge = "";
+        if(streak >= 30) badge = "👑 بطلة الشهر!";
+        else if(streak >= 7) badge = "🥇 بطلة الأسبوع!";
+        else if(streak >= 3) badge = "🥉 بطلة الإصرار!";
+        document.getElementById('streakBadge').innerText = badge;
+    }
+    updateStreak();
 
-// جلب تاريخ اليوم
-let today = new Date();
-// ضبط التاريخ ليتناسب مع التوقيت المحلي (لتفادي تأخر التاريخ)
-today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-let todayStr = today.toISOString().split('T')[0];
+    // --- المنطق اليومي (التسجيل) ---
+    let savedDate = localStorage.getItem('trackerDate');
+    let currentStep = parseInt(localStorage.getItem('currentStep')) || 0;
+    if (savedDate !== todayStr) { currentStep = 0; localStorage.setItem('trackerDate', todayStr); localStorage.setItem('currentStep', 0); }
+    document.getElementById("recordDate").value = todayStr;
 
-// التحقق من اليوم المحفوظ في الهاتف لتصفير العداد إذا بدأ يوم جديد
-let savedDate = localStorage.getItem('trackerDate');
-let currentStep = parseInt(localStorage.getItem('currentStep')) || 0;
+    function updateUI() {
+        if (currentStep >= meals.length) {
+            document.getElementById('glucoseForm').style.display = 'none';
+            document.getElementById('doneScreen').style.display = 'block';
+            
+            // إضافة يوم للسلسلة إذا أكملت العشاء لأول مرة اليوم
+            let lastCompleted = localStorage.getItem('lastCompletedDate');
+            if(lastCompleted !== todayStr) {
+                let currentStreak = parseInt(localStorage.getItem('streakCount')) || 0;
+                localStorage.setItem('streakCount', currentStreak + 1);
+                localStorage.setItem('lastCompletedDate', todayStr);
+                updateStreak();
+            }
+        } else {
+            document.getElementById('mealTitle').innerText = meals[currentStep].title;
+            document.getElementById('glucose').value = ''; document.getElementById('fastInsulin').value = '';
+            document.getElementById('slowInsulin').value = ''; document.getElementById('notes').value = '';
+            document.getElementById('glucoseAlert').style.display = 'none';
+        }
+    }
+    updateUI();
 
-if (savedDate !== todayStr) {
-currentStep = 0; // تصفير الوجبات لتبدأ من الفطور
-localStorage.setItem('trackerDate', todayStr);
-localStorage.setItem('currentStep', 0);
-}
+    // --- نظام الألوان الذكي أثناء الكتابة ---
+    document.getElementById('glucose').addEventListener('input', function(e) {
+        const val = parseInt(e.target.value);
+        const alertDiv = document.getElementById('glucoseAlert');
+        if (!val) { alertDiv.style.display = 'none'; return; }
+        alertDiv.style.display = 'block';
+        if (val < 80) {
+            alertDiv.innerHTML = '⚠️ السكر منخفض جداً! خذي قطعة حلوى أو عصير فوراً 🧃🍬';
+            alertDiv.className = 'alert-box alert-red';
+        } else if (val <= 140) {
+            alertDiv.innerHTML = 'ممتاز! مستوى السكر مثالي، برافو! 🌟🟢';
+            alertDiv.className = 'alert-box alert-green';
+        } else {
+            alertDiv.innerHTML = 'السكر مرتفع قليلاً، انتبهي لأكلك 🟡';
+            alertDiv.className = 'alert-box alert-yellow';
+        }
+    });
 
-// وضع تاريخ اليوم تلقائياً في خانة التاريخ
-document.getElementById("recordDate").value = todayStr;
+    // --- إرسال بيانات اليوميات (استخدام نص صريح لتجنب مشاكل CORS) ---
+    async function sendData(dataObj) {
+        dataObj.action = "save";
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(dataObj)
+        });
+        return await response.json();
+    }
 
-// دالة تحديث الشاشة حسب الوجبة الحالية
-function updateUI() {
-if (currentStep >= meals.length) {
-// إذا اكتملت الـ 3 وجبات
-document.getElementById('glucoseForm').style.display = 'none';
-document.getElementById('greeting').style.display = 'none';
-document.getElementById('doneScreen').style.display = 'block';
-} else {
-// عرض الوجبة الحالية
-document.getElementById('mealTitle').innerText = meals[currentStep].title;
-// تفريغ الخانات استعداداً للوجبة الجديدة
-document.getElementById('glucose').value = '';
-document.getElementById('fastInsulin').value = '';
-document.getElementById('slowInsulin').value = '';
-document.getElementById('notes').value = '';
-}
-}
+    document.getElementById("glucoseForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById("submitBtn"); const msg = document.getElementById("statusMessage");
+        btn.innerText = "⏳..."; btn.disabled = true; msg.style.display = "none";
 
-// تشغيل الدالة عند فتح التطبيق
-updateUI();
+        const data = {
+            date: document.getElementById("recordDate").value, meal: meals[currentStep].name,
+            glucose: document.getElementById("glucose").value, fastInsulin: document.getElementById("fastInsulin").value,
+            slowInsulin: document.getElementById("slowInsulin").value, notes: document.getElementById("notes").value
+        };
 
-// عند الضغط على زر التسجيل
-document.getElementById("glucoseForm").addEventListener("submit", function(e) {
-e.preventDefault();
+        try {
+            await sendData(data);
+            msg.innerText = "تم التسجيل بنجاح! 👏"; msg.className = "message success"; msg.style.display = "block";
+            setTimeout(() => {
+                currentStep++; localStorage.setItem('currentStep', currentStep);
+                msg.style.display = "none"; btn.innerText = "تسجيل وتأكيد ✨"; btn.disabled = false;
+                updateUI();
+            }, 1500);
+        } catch(err) {
+            msg.innerText = "حدث خطأ، حاول مجدداً"; msg.className = "message error"; msg.style.display = "block";
+            btn.innerText = "تسجيل وتأكيد ✨"; btn.disabled = false;
+        }
+    });
 
-const btn = document.getElementById("submitBtn");
-const msg = document.getElementById("statusMessage");
+    // --- نظام التبويبات السفلي ---
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
 
-btn.innerText = "جاري التسجيل... ⏳";
-btn.disabled = true;
-msg.style.display = "none";
+    // --- جلب وتعديل بيانات قديمة (التاريخ الشامل) ---
+    async function fetchHistory() {
+        const dateVal = document.getElementById('historyDate').value;
+        const msg = document.getElementById('historyMsg'); const content = document.getElementById('historyContent');
+        if(!dateVal) return;
+        
+        msg.innerText = "جاري البحث... 🔍"; msg.className = "message"; msg.style.display = "block"; content.innerHTML = "";
+        
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "fetchDate", date: dateVal })
+            });
+            const resData = await response.json();
+            
+            if(resData.data && resData.data.length > 0) {
+                msg.style.display = "none";
+                meals.forEach(m => {
+                    let mealData = resData.data.find(d => d.meal === m.name) || { glucose:'', fastInsulin:'', slowInsulin:'', notes:'' };
+                    // إنشاء كرت التعديل
+                    let card = `<div class="edit-card">
+                        <h3>${m.title}</h3>
+                        <div class="input-group"><label>السكر</label><input type="number" id="e_glu_${m.id}" value="${mealData.glucose}"></div>
+                        <div class="input-group"><label>سريع</label><input type="number" id="e_fast_${m.id}" value="${mealData.fastInsulin}"></div>
+                        <div class="input-group"><label>بطيء</label><input type="number" id="e_slow_${m.id}" value="${mealData.slowInsulin}"></div>
+                        <div class="input-group"><label>ملاحظات</label><input type="text" id="e_not_${m.id}" value="${mealData.notes}"></div>
+                        <button onclick="saveEdit('${dateVal}', '${m.name}', '${m.id}')" id="btn_${m.id}" style="background:#ad1457; padding:10px;">حفظ تعديل ${m.name}</button>
+                    </div>`;
+                    content.innerHTML += card;
+                });
+            } else {
+                msg.innerText = "لا توجد قياسات مسجلة في هذا اليوم."; msg.className = "message error";
+            }
+        } catch(err) {
+            msg.innerText = "خطأ في الاتصال!"; msg.className = "message error";
+        }
+    }
 
-// جمع البيانات
-const data = {
-date: document.getElementById("recordDate").value, // يأخذ التاريخ المكتوب حتى لو تم تعديله
-meal: meals[currentStep].name,
-glucose: document.getElementById("glucose").value,
-fastInsulin: document.getElementById("fastInsulin").value || "",
-slowInsulin: document.getElementById("slowInsulin").value || "",
-notes: document.getElementById("notes").value
-};
+    async function saveEdit(date, mealName, mealId) {
+        const btn = document.getElementById(`btn_${mealId}`);
+        btn.innerText = "جاري الحفظ..."; btn.disabled = true;
+        const data = {
+            date: date, meal: mealName,
+            glucose: document.getElementById(`e_glu_${mealId}`).value,
+            fastInsulin: document.getElementById(`e_fast_${mealId}`).value,
+            slowInsulin: document.getElementById(`e_slow_${mealId}`).value,
+            notes: document.getElementById(`e_not_${mealId}`).value
+        };
+        try {
+            await sendData(data);
+            btn.innerText = "تم التعديل بنجاح ✅"; btn.style.background = "#2e7d32";
+            setTimeout(() => { btn.innerText = `حفظ تعديل ${mealName}`; btn.style.background = "#ad1457"; btn.disabled = false; }, 2000);
+        } catch(err) { alert("فشل الحفظ!"); btn.disabled = false; }
+    }
 
-// إرسال البيانات
-fetch(WEB_APP_URL, {
-method: "POST",
-mode: "no-cors",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(data)
-})
-.then(() => {
-msg.innerText = "تم التسجيل بنجاح! 👏";
-msg.className = "message success";
-msg.style.display = "block";
-
-// الانتقال للوجبة التالية بعد ثانيتين
-setTimeout(() => {
-currentStep++;
-localStorage.setItem('currentStep', currentStep);
-msg.style.display = "none";
-updateUI(); // تحديث الواجهة لتظهر الوجبة الجديدة
-btn.innerText = "تسجيل وتأكيد ✨";
-btn.disabled = false;
-}, 2000);
-})
-.catch((error) => {
-msg.innerText = "حدث خطأ، المرجو المحاولة لاحقاً 😔";
-msg.className = "message error";
-msg.style.display = "block";
-btn.innerText = "تسجيل وتأكيد ✨";
-btn.disabled = false;
-});
-});
+    // --- توليد وتصدير PDF ---
+    async function generatePDF() {
+        const btn = document.getElementById('pdfBtn'); const msg = document.getElementById('pdfMsg');
+        btn.innerText = "جاري تجهيز الملف... ⏳"; btn.disabled = true;
+        
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "fetchAll" })
+            });
+            const resData = await response.json();
+            
+            if(resData.data && resData.data.length > 0) {
+                let tableHtml = `<tr style="background:#f8bbd0;"><th>التاريخ</th><th>الوجبة</th><th>السكر</th><th>سريع</th><th>بطيء</th><th>ملاحظات</th></tr>`;
+                resData.data.forEach(row => {
+                    tableHtml += `<tr><td style="padding:5px; border:1px solid #ccc;">${row.date}</td>
+                                  <td style="padding:5px; border:1px solid #ccc;">${row.meal}</td>
+                                  <td style="padding:5px; border:1px solid #ccc; font-weight:bold;">${row.glucose}</td>
+                                  <td style="padding:5px; border:1px solid #ccc;">${row.fastInsulin}</td>
+                                  <td style="padding:5px; border:1px solid #ccc;">${row.slowInsulin}</td>
+                                  <td style="padding:5px; border:1px solid #ccc;">${row.notes}</td></tr>`;
+                });
+                document.getElementById('pdfTable').innerHTML = tableHtml;
+                
+                // تحويل لـ PDF
+                const element = document.getElementById('pdfContainer');
+                element.style.display = "block"; // إظهار مؤقت للطباعة
+                html2pdf().from(element).set({
+                    margin: 10, filename: 'تقرير_السكري.pdf',
+                    html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).save().then(() => {
+                    element.style.display = "none"; btn.innerText = "تحميل التقرير 📥"; btn.disabled = false;
+                });
+            } else {
+                msg.innerText = "لا توجد بيانات كافية للتقرير."; msg.style.display="block"; btn.disabled=false; btn.innerText = "تحميل التقرير 📥";
+            }
+        } catch(err) {
+            msg.innerText = "حدث خطأ أثناء تحميل التقرير!"; msg.style.display="block"; btn.disabled=false; btn.innerText = "تحميل التقرير 📥";
+        }
+    }
 </script>
 
 </body>
