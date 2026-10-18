@@ -4,38 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>يومياتي الصحية 🌸</title>
-    <!-- مكتبات PDF والرسم البياني -->
+    <!-- المكتبات المطلوبة (PDF + Chart.js + التظليل الأخضر) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; background-color: #fce4ec; margin: 0; padding: 0; }
-        .screen { display: none; padding: 20px; padding-bottom: 80px; max-width: 450px; margin: auto; }
+        .screen { display: none; padding: 20px; padding-bottom: 40px; max-width: 450px; margin: auto; }
         .screen.active { display: block; }
         
-        /* الواجهة الرئيسية Dashboard */
+        /* الشاشة الرئيسية */
         .dash-header { text-align: center; margin-bottom: 25px; }
         .dash-header h1 { color: #d81b60; margin: 0; font-size: 28px; }
-        .streak-badge { background: #ad1457; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; display: inline-block; margin-top: 10px; }
+        .streak-badge { background: #ad1457; color: white; padding: 8px 20px; border-radius: 20px; font-size: 15px; display: inline-block; margin-top: 10px; font-weight: bold; }
+        
+        /* البطاقات الكبرى الـ 5 */
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: white; border-radius: 20px; padding: 20px 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
-        .card:active { border-color: #d81b60; transform: scale(0.95); }
+        .card { background: white; border-radius: 20px; padding: 20px 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; }
+        .card:active { border-color: #d81b60; transform: scale(0.98); }
         .card .icon { font-size: 40px; margin-bottom: 10px; display: block; }
-        .card .title { color: #d81b60; font-weight: bold; font-size: 16px; }
+        .card .title { color: #d81b60; font-weight: bold; font-size: 15px; }
+        .card-full { grid-column: span 2; } /* بطاقة التسجيل لتكون كبيرة وواضحة */
 
-        /* التصميم العام */
-        .container-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
+        /* التصميم العام للنماذج */
+        .container-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .back-btn { background: #f8bbd0; color: #ad1457; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .back-btn { background: #f8bbd0; color: #ad1457; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Tajawal'; }
         
         .input-group { margin-bottom: 15px; text-align: right; }
         label { display: block; color: #444; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         input, select { width: 100%; padding: 12px; border: 2px solid #f8bbd0; border-radius: 12px; box-sizing: border-box; font-family: 'Tajawal', sans-serif; font-size: 16px; outline: none; }
         input:focus, select:focus { border-color: #d81b60; }
-        button.primary { background-color: #d81b60; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button.primary { background-color: #d81b60; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Tajawal'; }
         button:disabled { background-color: #f48fb1; }
         
-        .alert-box { display: none; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: -5px; margin-bottom: 15px; font-size: 14px; }
+        /* التنبيهات */
+        .alert-box { display: none; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: -5px; margin-bottom: 15px; font-size: 14px; text-align:right;}
         .alert-red { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
         .alert-green { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .alert-yellow { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
@@ -44,14 +49,22 @@
         .success { background-color: #e8f5e9; color: #2e7d32; }
         .error { background-color: #ffebee; color: #c62828; }
 
-        /* الإحصائيات */
+        /* كروت السجل (للقراءة فقط) */
+        .record-card { background: #fdf0f4; border: 1px solid #f8bbd0; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: right; }
+        .record-card h3 { margin: 0 0 10px 0; color: #ad1457; border-bottom: 1px dashed #f8bbd0; padding-bottom: 5px;}
+        .record-card p { margin: 5px 0; font-size: 14px; font-weight: bold; color: #444;}
+        .record-card span.val { color: #d81b60; }
+
+        /* الإحصائيات والمبيان */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-box { background: #fdf0f4; padding: 15px 5px; border-radius: 12px; text-align: center; border: 1px solid #f8bbd0; }
         .stat-box span { font-size: 24px; font-weight: bold; color: #d81b60; display: block; }
         .stat-box p { margin: 5px 0 0; font-size: 12px; color: #555; font-weight: bold; }
         .chart-container { margin-top: 20px; background: white; padding: 10px; border-radius: 15px; border: 1px solid #f8bbd0; }
+        
+        /* تبويبات الفترات (PDF والإحصائيات) */
         .tabs { display: flex; margin-bottom: 15px; background: #f8bbd0; border-radius: 12px; overflow: hidden; }
-        .tab-btn { flex: 1; padding: 10px; text-align: center; border: none; background: none; font-weight: bold; color: #ad1457; cursor: pointer; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border: none; background: none; font-weight: bold; color: #ad1457; cursor: pointer; font-family: 'Tajawal'; }
         .tab-btn.active { background: #d81b60; color: white; }
     </style>
 </head>
@@ -65,11 +78,14 @@
         </div>
         
         <div class="grid-container">
-            <div class="card" onclick="goToScreen('screen-entry')">
-                <span class="icon">📝</span><span class="title">تسجيل جديد</span>
+            <div class="card card-full" onclick="goToScreen('screen-entry')" style="background: #fff0f5; border: 2px dashed #d81b60;">
+                <span class="icon">📝</span><span class="title">تسجيل قياس جديد الآن</span>
             </div>
             <div class="card" onclick="goToScreen('screen-history')">
-                <span class="icon">🕰️</span><span class="title">السجل والتعديل</span>
+                <span class="icon">📖</span><span class="title">قراءة السجل</span>
+            </div>
+            <div class="card" onclick="goToScreen('screen-edit')">
+                <span class="icon">✏️</span><span class="title">تعديل قياس سابق</span>
             </div>
             <div class="card" onclick="goToScreen('screen-stats'); loadStats('week');">
                 <span class="icon">📊</span><span class="title">الإحصائيات</span>
@@ -82,79 +98,67 @@
 
     <!-- 2. شاشة التسجيل اليومي -->
     <div id="screen-entry" class="screen">
-        <div class="top-bar">
-            <h2 style="color:#d81b60; margin:0; font-size:20px;">تسجيل القياس</h2>
-            <button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button>
-        </div>
-        
+        <div class="top-bar"><h2 style="color:#d81b60; margin:0;">تسجيل القياس</h2><button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button></div>
         <div class="container-box">
             <form id="glucoseForm">
-                <div class="input-group">
-                    <label>📅 التاريخ</label>
-                    <input type="date" id="recordDate" required>
-                </div>
+                <div class="input-group"><label>📅 التاريخ</label><input type="date" id="recordDate" required></div>
+                <div class="input-group"><label>⏱️ التوقيت والموعد</label><select id="mealSelector" onchange="changeMealManual()"></select></div>
                 
-                <!-- التنقل السريع بين الوجبات -->
-                <div class="input-group">
-                    <label>⏱️ التوقيت الحالى</label>
-                    <select id="mealSelector" onchange="changeMealManual()"></select>
-                </div>
-
-                <div class="input-group">
-                    <label>🩸 مستوى السكر (mg/dL)</label>
-                    <input type="number" id="glucose" required>
-                </div>
+                <div class="input-group"><label>🩸 مستوى السكر (mg/dL)</label><input type="number" id="glucose" required></div>
                 <div id="glucoseAlert" class="alert-box"></div>
 
-                <!-- خانات الأنسولين (تختفي في أوقات معينة) -->
                 <div id="insulinFields">
-                    <div class="input-group">
-                        <label>⚡ سريع (وحدات)</label>
-                        <input type="number" id="fastInsulin">
-                    </div>
-                    <div class="input-group">
-                        <label>🐢 بطيء (وحدات)</label>
-                        <input type="number" id="slowInsulin">
-                    </div>
+                    <div class="input-group"><label>⚡ سريع (وحدات)</label><input type="number" id="fastInsulin"></div>
+                    <div class="input-group"><label>🐢 بطيء (وحدات)</label><input type="number" id="slowInsulin"></div>
                 </div>
 
-                <div class="input-group">
-                    <label>📝 ملاحظات (اختياري)</label>
-                    <input type="text" id="notes" placeholder="شنو كليتي؟ كيف حاسة؟">
-                </div>
-
+                <div class="input-group"><label>📝 ملاحظات (اختياري)</label><input type="text" id="notes" placeholder="شنو كليتي؟"></div>
                 <button type="submit" id="submitBtn" class="primary">حفظ القياس ✨</button>
                 <div id="statusMessage" class="message"></div>
             </form>
         </div>
     </div>
 
-    <!-- 3. شاشة السجل والتعديل -->
+    <!-- 3. شاشة قراءة السجل (للقراءة فقط) -->
     <div id="screen-history" class="screen">
-        <div class="top-bar">
-            <h2 style="color:#d81b60; margin:0; font-size:20px;">السجل القديم</h2>
-            <button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button>
-        </div>
+        <div class="top-bar"><h2 style="color:#d81b60; margin:0;">قراءة السجل 📖</h2><button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button></div>
         <div class="container-box">
-            <div class="input-group">
-                <label>اختاري يوماً للبحث 🔍</label>
-                <input type="date" id="historyDate">
-                <button onclick="fetchHistory()" class="primary" style="padding:10px; font-size:16px;">بحث</button>
-            </div>
-            <div id="historyMsg" class="message"></div>
-            <div id="historyContent" style="text-align:right;"></div>
+            <div class="input-group"><label>اختاري يوماً للمراجعة 🔍</label><input type="date" id="viewDate">
+            <button onclick="fetchHistoryView()" class="primary" style="padding:10px;">جلب السجل</button></div>
+            <div id="viewMsg" class="message"></div>
+            <div id="viewContent"></div>
         </div>
     </div>
 
-    <!-- 4. شاشة الإحصائيات -->
-    <div id="screen-stats" class="screen">
-        <div class="top-bar">
-            <h2 style="color:#d81b60; margin:0; font-size:20px;">التحليلات 📊</h2>
-            <button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button>
+    <!-- 4. شاشة التعديل (مستقلة) -->
+    <div id="screen-edit" class="screen">
+        <div class="top-bar"><h2 style="color:#d81b60; margin:0;">تعديل قياس ✏️</h2><button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button></div>
+        <div class="container-box">
+            <div class="input-group"><label>1. اختاري التاريخ 📅</label><input type="date" id="editDate"></div>
+            <div class="input-group"><label>2. اختاري الوجبة/الوقت ⏱️</label><select id="editMealSelect"></select></div>
+            <button onclick="fetchForEdit()" class="primary" style="padding:10px; background:#ad1457;">بحث عن القياس 🔍</button>
+            <div id="editMsg" class="message"></div>
         </div>
+        
+        <div id="editFormBox" class="container-box" style="display:none; border:2px dashed #d81b60;">
+            <h3 id="editFormTitle" style="color:#ad1457; margin-top:0;">تعديل القياس</h3>
+            <div class="input-group"><label>🩸 السكر</label><input type="number" id="e_glu"></div>
+            <div id="e_insFields">
+                <div class="input-group"><label>⚡ سريع</label><input type="number" id="e_fast"></div>
+                <div class="input-group"><label>🐢 بطيء</label><input type="number" id="e_slow"></div>
+            </div>
+            <div class="input-group"><label>📝 ملاحظات</label><input type="text" id="e_notes"></div>
+            <button onclick="saveEditData()" id="saveEditBtn" class="primary" style="background:#2e7d32;">تأكيد وحفظ التعديل ✅</button>
+            <div id="editSaveMsg" class="message"></div>
+        </div>
+    </div>
+
+    <!-- 5. شاشة الإحصائيات -->
+    <div id="screen-stats" class="screen">
+        <div class="top-bar"><h2 style="color:#d81b60; margin:0;">التحليلات 📊</h2><button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button></div>
         <div class="tabs">
-            <button class="tab-btn active" id="tab-week" onclick="loadStats('week')">هذا الأسبوع</button>
-            <button class="tab-btn" id="tab-month" onclick="loadStats('month')">هذا الشهر</button>
+            <button class="tab-btn active" id="tab-week" onclick="loadStats('week')">آخر 7 أيام</button>
+            <button class="tab-btn" id="tab-month" onclick="loadStats('month')">آخر 30 يوماً</button>
         </div>
         <div id="statsLoader" class="message" style="display:block;">جاري حساب البيانات... ⏳</div>
         <div id="statsContent" style="display:none;">
@@ -164,25 +168,32 @@
                 <div class="stat-box"><span id="statMax">--</span><p>أعلى قياس ⬆️</p></div>
                 <div class="stat-box"><span id="statMin">--</span><p>أدنى قياس ⬇️</p></div>
             </div>
-            <div class="chart-container">
-                <canvas id="glucoseChart"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="glucoseChart"></canvas></div>
         </div>
     </div>
 
-    <!-- 5. شاشة PDF -->
+    <!-- 6. شاشة PDF -->
     <div id="screen-pdf" class="screen">
-        <div class="top-bar">
-            <h2 style="color:#d81b60; margin:0; font-size:20px;">تقرير الطبيب 📑</h2>
-            <button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button>
-        </div>
+        <div class="top-bar"><h2 style="color:#d81b60; margin:0;">تقرير الطبيب 📑</h2><button class="back-btn" onclick="goToScreen('screen-dashboard')">🏠 عودة</button></div>
         <div class="container-box">
-            <p>تصدير جميع بياناتك كملف PDF منظم.</p>
-            <button onclick="generatePDF()" id="pdfBtn" class="primary" style="background:#2e7d32;">تحميل الآن 📥</button>
+            <div class="input-group">
+                <label>تحديد فترة التقرير 🗓️</label>
+                <select id="pdfPeriod" onchange="toggleCustomDates()">
+                    <option value="7">آخر 7 أيام (أسبوعي)</option>
+                    <option value="30">آخر 30 يوماً (شهري)</option>
+                    <option value="custom">فترة مخصصة...</option>
+                </select>
+            </div>
+            <div id="customDatesBox" style="display:none;">
+                <div class="input-group"><label>من تاريخ:</label><input type="date" id="pdfStart"></div>
+                <div class="input-group"><label>إلى تاريخ:</label><input type="date" id="pdfEnd"></div>
+            </div>
+            <button onclick="generatePDF()" id="pdfBtn" class="primary" style="background:#2e7d32;">تجهيز وتحميل PDF 📥</button>
             <div id="pdfMsg" class="message"></div>
         </div>
         <div id="pdfContainer" style="display:none; padding:20px; font-family:sans-serif; text-align:right;">
-            <h2 style="color:#d81b60; text-align:center;">يوميات السكري 🌸</h2>
+            <h2 style="color:#d81b60; text-align:center;">تقرير يوميات السكري 🌸</h2>
+            <p id="pdfRangeText" style="text-align:center; font-weight:bold;"></p>
             <table id="pdfTable" style="width:100%; border-collapse:collapse; margin-top:20px;" border="1"></table>
         </div>
     </div>
@@ -191,18 +202,27 @@
     // ⚠️ ضعي رابط Google Apps Script الجديد هنا!
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5sKIkrGXPWvDazWPzNxRAKqC5tJq6sn3OoIoH36DZR3n1UTdZerW5Y4qO8WF3Zfs/exec"; 
 
-    // --- إعدادات المواعيد الخمسة ---
+    // إعدادات المواعيد الخمسة (مع الساعات التقديرية)
     const meals = [ 
-        { id: 'm1', name: 'الفطور', hasInsulin: true }, 
-        { id: 'm2', name: 'الغداء', hasInsulin: true }, 
-        { id: 'm3', name: 'الرابعة عصراً', hasInsulin: false }, 
-        { id: 'm4', name: 'العشاء', hasInsulin: true }, 
-        { id: 'm5', name: 'الثانية صباحاً', hasInsulin: false } 
+        { id: 'm1', name: 'الفطور', label: '🍳 1. الفطور (08:00 صباحاً)', hasInsulin: true }, 
+        { id: 'm2', name: 'الغداء', label: '🥗 2. الغداء (02:00 زوالاً)', hasInsulin: true }, 
+        { id: 'm3', name: 'الرابعة عصراً', label: '🕒 3. بين الغداء والعشاء (04:00 عصراً)', hasInsulin: false }, 
+        { id: 'm4', name: 'العشاء', label: '🍲 4. العشاء (08:00 مساءً)', hasInsulin: true }, 
+        { id: 'm5', name: 'الثانية صباحاً', label: '🌙 5. منتصف الليل (02:00 صباحاً)', hasInsulin: false } 
     ];
 
     let todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     document.getElementById("recordDate").value = todayStr;
-    document.getElementById("historyDate").value = todayStr;
+    document.getElementById("viewDate").value = todayStr;
+    document.getElementById("editDate").value = todayStr;
+
+    // تهيئة القوائم المنسدلة للوجبات
+    const entrySelector = document.getElementById('mealSelector');
+    const editSelector = document.getElementById('editMealSelect');
+    meals.forEach((m, idx) => {
+        entrySelector.innerHTML += `<option value="${idx}">${m.label}</option>`;
+        editSelector.innerHTML += `<option value="${idx}">${m.label}</option>`;
+    });
 
     // التنقل بين الشاشات
     function goToScreen(screenId) {
@@ -211,26 +231,28 @@
         if(screenId === 'screen-entry') setupEntryScreen();
     }
 
-    // --- نظام الإدخال اليومي ---
+    // دالة الإرسال المركزية (لإصلاح CORS)
+    async function apiRequest(payload) {
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        });
+        return await response.json();
+    }
+
+    // --- التسجيل اليومي ---
     let currentMealIndex = parseInt(localStorage.getItem('currentMealIndex')) || 0;
     if(localStorage.getItem('trackerDate') !== todayStr) { currentMealIndex = 0; localStorage.setItem('trackerDate', todayStr); }
 
     function setupEntryScreen() {
-        const selector = document.getElementById('mealSelector');
-        selector.innerHTML = '';
-        meals.forEach((m, idx) => {
-            let opt = document.createElement('option'); opt.value = idx; opt.innerText = m.name;
-            if(idx === currentMealIndex) opt.selected = true;
-            selector.appendChild(opt);
-        });
+        document.getElementById('mealSelector').value = currentMealIndex;
         applyMealRules();
     }
-
     function changeMealManual() {
         currentMealIndex = parseInt(document.getElementById('mealSelector').value);
         applyMealRules();
     }
-
     function applyMealRules() {
         const meal = meals[currentMealIndex];
         document.getElementById('insulinFields').style.display = meal.hasInsulin ? 'block' : 'none';
@@ -239,17 +261,15 @@
         document.getElementById('glucoseAlert').style.display = 'none';
     }
 
-    // تنبيهات الألوان المباشرة (مع تنبيه الثانية صباحاً)
+    // تنبيهات الألوان الذكية والأمان الليلي
     document.getElementById('glucose').addEventListener('input', function(e) {
         const val = parseInt(e.target.value); const alertDiv = document.getElementById('glucoseAlert');
         const isNight = meals[currentMealIndex].name === 'الثانية صباحاً';
         
         if (!val) { alertDiv.style.display = 'none'; return; }
         alertDiv.style.display = 'block';
-        
         if (isNight && val < 100) {
-            alertDiv.innerHTML = '🌙 تنبيه الأمان الليلي: السكر أقل من 100، كولي شي حاجة خفيفة دابا باش ترتاحي في نعاسك 🥪';
-            alertDiv.className = 'alert-box alert-red';
+            alertDiv.innerHTML = '🌙 تنبيه ليلي: السكر أقل من 100، كولي شي حاجة خفيفة دابا باش ترتاحي في نعاسك 🥪'; alertDiv.className = 'alert-box alert-red';
         } else if (val < 80) {
             alertDiv.innerHTML = '⚠️ السكر منخفض! خذي عصير أو حلوى فوراً 🧃'; alertDiv.className = 'alert-box alert-red';
         } else if (val <= 140) {
@@ -259,49 +279,109 @@
         }
     });
 
-    // إرسال البيانات
+    // حفظ التسجيل
     document.getElementById("glucoseForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         const btn = document.getElementById("submitBtn"); const msg = document.getElementById("statusMessage");
         btn.innerText = "⏳ جاري الحفظ..."; btn.disabled = true; msg.style.display = "none";
 
         const data = { action: "save", date: document.getElementById("recordDate").value, meal: meals[currentMealIndex].name, glucose: document.getElementById("glucose").value, fastInsulin: document.getElementById("fastInsulin").value, slowInsulin: document.getElementById("slowInsulin").value, notes: document.getElementById("notes").value };
+        
         try {
-            await fetch(WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(data) });
+            await apiRequest(data);
             msg.innerText = "تم التسجيل بنجاح! 👏"; msg.className = "message success"; msg.style.display = "block";
             
-            // تحديث السلسلة (Gamification)
-            if(meals[currentMealIndex].name === 'العشاء' && localStorage.getItem('lastStreakDate') !== todayStr) {
+            // تحديث السلسلة (عند إكمال التوقيت 5 - الثانية صباحاً)
+            if(meals[currentMealIndex].name === 'الثانية صباحاً' && localStorage.getItem('lastStreakDate') !== todayStr) {
                 let s = (parseInt(localStorage.getItem('streakCount'))||0) + 1;
                 localStorage.setItem('streakCount', s); localStorage.setItem('lastStreakDate', todayStr);
                 document.getElementById('streakCount').innerText = s;
             }
             
             setTimeout(() => {
-                if(currentMealIndex < 4) currentMealIndex++; else currentMealIndex = 0;
+                currentMealIndex = (currentMealIndex < 4) ? currentMealIndex + 1 : 0;
                 localStorage.setItem('currentMealIndex', currentMealIndex);
                 setupEntryScreen(); msg.style.display = "none"; btn.innerText = "حفظ القياس ✨"; btn.disabled = false;
             }, 1500);
         } catch(err) { msg.innerText = "خطأ في الاتصال!"; msg.className = "message error"; msg.style.display = "block"; btn.disabled = false; }
     });
 
-    // --- الإحصائيات (الجدول والمبيان) ---
+    // --- قراءة السجل (Read Only) ---
+    async function fetchHistoryView() {
+        const d = document.getElementById('viewDate').value; const cont = document.getElementById('viewContent');
+        const msg = document.getElementById('viewMsg');
+        if(!d) return;
+        msg.innerText="⏳ جاري البحث..."; msg.className="message"; msg.style.display="block"; cont.innerHTML="";
+        
+        try {
+            const resData = await apiRequest({ action: "fetchDate", date: d });
+            msg.style.display="none";
+            if(resData.data && resData.data.length > 0) {
+                meals.forEach(m => {
+                    let dRow = resData.data.find(x => x.meal === m.name);
+                    if(dRow && dRow.glucose) {
+                        let insText = m.hasInsulin ? ` | سريع: <span class="val">${dRow.fastInsulin||0}</span> | بطيء: <span class="val">${dRow.slowInsulin||0}</span>` : '';
+                        cont.innerHTML += `<div class="record-card"><h3>${m.label}</h3><p>السكر: <span class="val">${dRow.glucose}</span>${insText}</p><p>ملاحظات: <span style="color:#666; font-weight:normal;">${dRow.notes||'لا يوجد'}</span></p></div>`;
+                    }
+                });
+            } else { msg.innerText="لا توجد بيانات مسجلة في هذا اليوم."; msg.className="message error"; msg.style.display="block"; }
+        } catch(err) { msg.innerText="خطأ في الاتصال!"; msg.className="message error"; msg.style.display="block"; }
+    }
+
+    // --- تعديل قياس سابق ---
+    async function fetchForEdit() {
+        const d = document.getElementById('editDate').value; 
+        const mIdx = document.getElementById('editMealSelect').value;
+        const msg = document.getElementById('editMsg');
+        const formBox = document.getElementById('editFormBox');
+        if(!d) return;
+        
+        msg.innerText="⏳ جاري جلب القياس..."; msg.className="message"; msg.style.display="block"; formBox.style.display="none";
+        try {
+            const resData = await apiRequest({ action: "fetchDate", date: d });
+            msg.style.display="none";
+            const selectedMeal = meals[mIdx];
+            let dRow = (resData.data||[]).find(x => x.meal === selectedMeal.name) || { glucose:'', fastInsulin:'', slowInsulin:'', notes:'' };
+            
+            document.getElementById('editFormTitle').innerText = `تعديل: ${selectedMeal.name} (${d})`;
+            document.getElementById('e_glu').value = dRow.glucose;
+            document.getElementById('e_fast').value = dRow.fastInsulin;
+            document.getElementById('e_slow').value = dRow.slowInsulin;
+            document.getElementById('e_notes').value = dRow.notes;
+            document.getElementById('e_insFields').style.display = selectedMeal.hasInsulin ? 'block' : 'none';
+            formBox.style.display = "block";
+        } catch(err) { msg.innerText="خطأ في الاتصال!"; msg.className="message error"; msg.style.display="block"; }
+    }
+    async function saveEditData() {
+        const btn = document.getElementById('saveEditBtn'); const msg = document.getElementById('editSaveMsg');
+        btn.innerText = "⏳ جاري الحفظ..."; btn.disabled = true; msg.style.display="none";
+        
+        const d = document.getElementById('editDate').value; 
+        const selectedMeal = meals[document.getElementById('editMealSelect').value];
+        const data = { action: "save", date: d, meal: selectedMeal.name, glucose: document.getElementById('e_glu').value, fastInsulin: document.getElementById('e_fast').value, slowInsulin: document.getElementById('e_slow').value, notes: document.getElementById('e_notes').value };
+        
+        try {
+            await apiRequest(data);
+            msg.innerText = "تم تحديث القياس بنجاح! ✅"; msg.className="message success"; msg.style.display="block";
+            btn.innerText = "تأكيد وحفظ التعديل ✅"; btn.disabled = false;
+        } catch(err) { msg.innerText="فشل الحفظ!"; msg.className="message error"; msg.style.display="block"; btn.disabled=false; btn.innerText="إعادة المحاولة"; }
+    }
+
+    // --- الإحصائيات مع المنطقة الخضراء ---
     let myChart = null;
     async function loadStats(period) {
         document.getElementById('tab-week').className = period === 'week' ? 'tab-btn active' : 'tab-btn';
         document.getElementById('tab-month').className = period === 'month' ? 'tab-btn active' : 'tab-btn';
         document.getElementById('statsLoader').style.display = "block"; document.getElementById('statsContent').style.display = "none";
         
+        let endD = new Date(); let startD = new Date();
+        startD.setDate(startD.getDate() - (period === 'week' ? 7 : 30));
+        
         try {
-            const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchAll" }) });
-            const resData = await res.json();
-            
+            const resData = await apiRequest({ action: "fetchRange", startDate: startD.toISOString().split('T')[0], endDate: endD.toISOString().split('T')[0] });
             if(resData.data && resData.data.length > 0) {
-                let cutoffDate = new Date();
-                cutoffDate.setDate(cutoffDate.getDate() - (period === 'week' ? 7 : 30));
-                let filtered = resData.data.filter(d => new Date(d.date) >= cutoffDate && d.glucose != "");
-                
-                if(filtered.length === 0) throw "لا توجد بيانات لهذه الفترة";
+                let filtered = resData.data.filter(d => d.glucose != "");
+                if(filtered.length === 0) throw "لا توجد أرقام";
 
                 let totalGlu = 0, maxGlu = 0, minGlu = 999, inTarget = 0;
                 let labels = [], dataPoints = [], colors = [];
@@ -320,63 +400,53 @@
                 document.getElementById('statMin').innerText = minGlu;
                 document.getElementById('statTarget').innerText = Math.round((inTarget / filtered.length) * 100) + "%";
 
-                // رسم المبيان
                 if(myChart) myChart.destroy();
                 const ctx = document.getElementById('glucoseChart').getContext('2d');
                 myChart = new Chart(ctx, {
                     type: 'line',
                     data: { labels: labels, datasets: [{ label: 'مستوى السكر', data: dataPoints, borderColor: '#f48fb1', backgroundColor: 'transparent', pointBackgroundColor: colors, pointRadius: 5, tension: 0.3 }] },
-                    options: { responsive: true, scales: { y: { beginAtZero: false, suggestedMin: 50, suggestedMax: 200 } }, plugins: { annotation: { annotations: { box1: { type: 'box', yMin: 80, yMax: 140, backgroundColor: 'rgba(46, 125, 50, 0.1)' } } } } } // خلفية خضراء للمنطقة المثالية
+                    options: { responsive: true, scales: { y: { min: 40, max: Math.max(maxGlu+20, 200) } }, plugins: { annotation: { annotations: { box1: { type: 'box', yMin: 80, yMax: 140, backgroundColor: 'rgba(46, 125, 50, 0.1)', borderWidth: 0 } } } } }
                 });
-                
                 document.getElementById('statsLoader').style.display = "none"; document.getElementById('statsContent').style.display = "block";
             } else throw "لا توجد بيانات";
         } catch(err) { document.getElementById('statsLoader').innerText = err; }
     }
 
-    // --- السجل والتعديل (نفس فكرة القديم مع تحديثات) ---
-    async function fetchHistory() {
-        const d = document.getElementById('historyDate').value; const cont = document.getElementById('historyContent');
-        cont.innerHTML = "<p>جاري البحث...</p>";
-        const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchDate", date: d }) });
-        const resData = await res.json();
-        cont.innerHTML = "";
-        
-        meals.forEach((m, idx) => {
-            let dRow = (resData.data||[]).find(x => x.meal === m.name) || { glucose:'', fastInsulin:'', slowInsulin:'', notes:'' };
-            let insHtml = m.hasInsulin ? `<div class="input-group"><label>سريع</label><input type="number" id="eh_f_${idx}" value="${dRow.fastInsulin}"></div><div class="input-group"><label>بطيء</label><input type="number" id="eh_s_${idx}" value="${dRow.slowInsulin}"></div>` : `<input type="hidden" id="eh_f_${idx}" value=""><input type="hidden" id="eh_s_${idx}" value="">`;
-            
-            cont.innerHTML += `<div class="container-box" style="margin-top:10px; padding:10px;">
-                <h3 style="color:#d81b60; margin:0 0 10px 0;">${m.name}</h3>
-                <div class="input-group"><label>السكر</label><input type="number" id="eh_g_${idx}" value="${dRow.glucose}"></div>
-                ${insHtml}
-                <div class="input-group"><label>ملاحظات</label><input type="text" id="eh_n_${idx}" value="${dRow.notes}"></div>
-                <button onclick="saveEdit('${d}', '${m.name}', ${idx}, this)" class="primary" style="padding:10px;">حفظ التعديل</button>
-            </div>`;
-        });
-    }
-    async function saveEdit(date, meal, idx, btn) {
-        btn.innerText = "⏳..."; btn.disabled = true;
-        const data = { action: "save", date: date, meal: meal, glucose: document.getElementById(`eh_g_${idx}`).value, fastInsulin: document.getElementById(`eh_f_${idx}`).value, slowInsulin: document.getElementById(`eh_s_${idx}`).value, notes: document.getElementById(`eh_n_${idx}`).value };
-        await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(data) });
-        btn.innerText = "تم التعديل ✅"; setTimeout(()=>{ btn.innerText="حفظ التعديل"; btn.disabled=false;}, 1500);
-    }
-
-    // --- تصدير PDF ---
+    // --- تصدير PDF حسب المدة الزمنية ---
+    function toggleCustomDates() { document.getElementById('customDatesBox').style.display = document.getElementById('pdfPeriod').value === 'custom' ? 'block' : 'none'; }
+    
     async function generatePDF() {
-        const btn = document.getElementById('pdfBtn'); const msg = document.getElementById('pdfMsg'); btn.innerText="⏳..."; btn.disabled=true;
-        const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchAll" }) });
-        const resData = await res.json();
+        const btn = document.getElementById('pdfBtn'); const msg = document.getElementById('pdfMsg');
+        btn.innerText = "⏳ جاري التجهيز..."; btn.disabled = true; msg.style.display="none";
         
-        let tHTML = `<tr style="background:#f8bbd0;"><th>التاريخ</th><th>الوقت</th><th>السكر</th><th>سريع</th><th>بطيء</th><th>ملاحظات</th></tr>`;
-        (resData.data||[]).forEach(r => tHTML += `<tr><td style="border:1px solid #ccc; padding:5px;">${r.date}</td><td style="border:1px solid #ccc; padding:5px;">${r.meal}</td><td style="border:1px solid #ccc; font-weight:bold; padding:5px;">${r.glucose}</td><td style="border:1px solid #ccc; padding:5px;">${r.fastInsulin}</td><td style="border:1px solid #ccc; padding:5px;">${r.slowInsulin}</td><td style="border:1px solid #ccc; padding:5px;">${r.notes}</td></tr>`);
+        let period = document.getElementById('pdfPeriod').value;
+        let startD = new Date(), endD = new Date();
         
-        document.getElementById('pdfTable').innerHTML = tHTML;
-        const el = document.getElementById('pdfContainer'); el.style.display="block";
-        html2pdf().from(el).set({ margin:10, filename:'تقرير_السكري.pdf', jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' } }).save().then(()=>{ el.style.display="none"; btn.innerText="تحميل الآن 📥"; btn.disabled=false; });
+        if (period === '7') { startD.setDate(startD.getDate() - 7); }
+        else if (period === '30') { startD.setDate(startD.getDate() - 30); }
+        else {
+            if(!document.getElementById('pdfStart').value || !document.getElementById('pdfEnd').value) {
+                msg.innerText="المرجو تحديد تواريخ الفترة!"; msg.className="message error"; msg.style.display="block"; btn.disabled=false; btn.innerText="تحميل PDF"; return;
+            }
+            startD = new Date(document.getElementById('pdfStart').value);
+            endD = new Date(document.getElementById('pdfEnd').value);
+        }
+
+        try {
+            const resData = await apiRequest({ action: "fetchRange", startDate: startD.toISOString().split('T')[0], endDate: endD.toISOString().split('T')[0] });
+            if(resData.data && resData.data.length > 0) {
+                document.getElementById('pdfRangeText').innerText = `من: ${startD.toISOString().split('T')[0]}  إلى: ${endD.toISOString().split('T')[0]}`;
+                
+                let tHTML = `<tr style="background:#f8bbd0;"><th>التاريخ</th><th>الوقت</th><th>السكر</th><th>سريع</th><th>بطيء</th><th>ملاحظات</th></tr>`;
+                resData.data.forEach(r => tHTML += `<tr><td style="border:1px solid #ccc; padding:5px; font-size:12px;">${r.date}</td><td style="border:1px solid #ccc; padding:5px; font-size:12px;">${r.meal}</td><td style="border:1px solid #ccc; font-weight:bold; padding:5px; text-align:center;">${r.glucose}</td><td style="border:1px solid #ccc; padding:5px; text-align:center;">${r.fastInsulin||'-'}</td><td style="border:1px solid #ccc; padding:5px; text-align:center;">${r.slowInsulin||'-'}</td><td style="border:1px solid #ccc; padding:5px; font-size:12px;">${r.notes}</td></tr>`);
+                
+                document.getElementById('pdfTable').innerHTML = tHTML;
+                const el = document.getElementById('pdfContainer'); el.style.display="block";
+                html2pdf().from(el).set({ margin:10, filename:'تقرير_السكري.pdf', jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' } }).save().then(()=>{ el.style.display="none"; btn.innerText="تحميل PDF 📥"; btn.disabled=false; });
+            } else { msg.innerText="لا توجد سجلات في هذه الفترة."; msg.className="message error"; msg.style.display="block"; btn.disabled=false; btn.innerText="تحميل PDF"; }
+        } catch(err) { msg.innerText="خطأ في تحميل التقرير."; msg.className="message error"; msg.style.display="block"; btn.disabled=false; btn.innerText="تحميل PDF"; }
     }
     
-    // تشغيل العداد عند الفتح
     document.getElementById('streakCount').innerText = localStorage.getItem('streakCount') || 0;
 </script>
 </body>
